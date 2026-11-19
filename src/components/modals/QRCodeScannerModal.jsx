@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useApp, PUBLIC_HTTPS_TUNNEL, LOCAL_LAN_IP } from '../../context/AppContext';
+import { useApp, PRODUCTION_DOMAIN, PUBLIC_HTTPS_TUNNEL, LOCAL_LAN_IP } from '../../context/AppContext';
 import { PRODUCTS } from '../../data/heritageData';
 import { QRCodeGenerator } from '../common/QRCodeGenerator';
 import { 
@@ -35,10 +35,17 @@ export const QRCodeScannerModal = () => {
   const [selectedId, setSelectedId] = useState(activePassportCode || 'CNH-001');
   const [isScanning, setIsScanning] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showLogoOnQR, setShowLogoOnQR] = useState(true);
+
+  // Dynamic Host Detection: If on live domain (e.g. tankham.com), use it directly!
+  const isBrowser = typeof window !== 'undefined';
+  const currentOrigin = isBrowser ? window.location.origin : PRODUCTION_DOMAIN;
+  const isLocalhost = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const defaultLiveHost = (!isLocalhost && isBrowser) ? currentOrigin : PRODUCTION_DOMAIN;
   
-  // Connection Mode: 'public' (universal HTTPS tunnel, works on 4G/5G/Wi-Fi) | 'wifi' (local LAN) | 'local' (PC localhost)
+  // Connection Mode: 'public' (tankham.com / live HTTPS, works everywhere on 4G/5G/Wi-Fi) | 'wifi' (local LAN) | 'local' (PC localhost)
   const [scanMode, setScanMode] = useState('public');
-  const [customHost, setCustomHost] = useState(PUBLIC_HTTPS_TUNNEL);
+  const [customHost, setCustomHost] = useState(defaultLiveHost);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   if (!isPassportModalOpen) return null;
@@ -50,12 +57,11 @@ export const QRCodeScannerModal = () => {
   // Compute exact scannable URL
   let qrUrl = '';
   if (scanMode === 'public') {
-    qrUrl = `${PUBLIC_HTTPS_TUNNEL}/?view=passport&id=${passportCode}`;
+    qrUrl = `${defaultLiveHost}/?view=passport&id=${passportCode}`;
   } else if (scanMode === 'wifi') {
     qrUrl = `http://${LOCAL_LAN_IP}/?view=passport&id=${passportCode}`;
   } else if (scanMode === 'local') {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-    qrUrl = `${origin}/?view=passport&id=${passportCode}`;
+    qrUrl = `${currentOrigin}/?view=passport&id=${passportCode}`;
   } else {
     qrUrl = `${customHost}/?view=passport&id=${passportCode}`;
   }
@@ -120,7 +126,7 @@ export const QRCodeScannerModal = () => {
               Chọn sản phẩm xem tem QR di sản:
             </span>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {PRODUCTS.slice(0, 5).map(p => {
+              {PRODUCTS.map(p => {
                 const code = p.id.replace('CNH-00', 'SP00');
                 const isSelected = p.id === product.id;
                 return (
@@ -157,7 +163,7 @@ export const QRCodeScannerModal = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-1.5 text-xs">
-              {/* Option 1: Public HTTPS (Recommended, bypasses all router / firewall blocks) */}
+              {/* Option 1: Live Domain (tankham.com, permanent HTTPS, universal access) */}
               <button
                 onClick={() => setScanMode('public')}
                 className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
@@ -168,9 +174,11 @@ export const QRCodeScannerModal = () => {
               >
                 <div className="flex items-center gap-1 text-[11px]">
                   <Lock className="w-3 h-3 text-emerald-400" />
-                  <span>Mọi Điện Thoại</span>
+                  <span>{isLocalhost ? 'Tên Miền Live' : 'Mọi Điện Thoại'}</span>
                 </div>
-                <div className="text-[9px] opacity-80 mt-0.5 text-emerald-300 font-semibold">Khuyên dùng (HTTPS)</div>
+                <div className="text-[9px] opacity-80 mt-0.5 text-emerald-300 font-semibold truncate max-w-full">
+                  {defaultLiveHost.replace(/^https?:\/\//, '')}
+                </div>
               </button>
 
               {/* Option 2: Local Wi-Fi */}
@@ -222,8 +230,8 @@ export const QRCodeScannerModal = () => {
                   />
                   <button
                     onClick={() => {
-                      setCustomHost(PUBLIC_HTTPS_TUNNEL);
-                      showToast('Đã khôi phục đường dẫn mặc định');
+                      setCustomHost(defaultLiveHost);
+                      showToast('Đã khôi phục đường dẫn mặc định: ' + defaultLiveHost);
                     }}
                     className="px-2.5 py-1 text-[10px] rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold"
                   >
@@ -234,12 +242,25 @@ export const QRCodeScannerModal = () => {
             )}
           </div>
 
+          {/* Toggle Clean QR Matrix (with or without center logo) */}
+          <div className="flex items-center justify-center gap-2">
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={showLogoOnQR}
+                onChange={(e) => setShowLogoOnQR(e.target.checked)}
+                className="rounded border-gray-300 text-[#17382D] focus:ring-0"
+              />
+              <span>Hiển thị logo Tân Khảm ở tâm mã QR</span>
+            </label>
+          </div>
+
           {/* Real Standard ISO Scannable QR Code */}
           <div className="relative inline-block p-4 sm:p-5 rounded-3xl bg-white border-2 border-[#D3B392] shadow-xl mx-auto">
             <QRCodeGenerator 
               value={qrUrl} 
-              size={210} 
-              showLogo={true}
+              size={220} 
+              showLogo={showLogoOnQR}
               errorCorrectionLevel="H"
             />
 

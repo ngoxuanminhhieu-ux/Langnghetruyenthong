@@ -7,10 +7,10 @@ import QRCode from 'qrcode';
  * Android Google Lens, Zalo Scanner, and any physical mobile device.
  */
 export const QRCodeGenerator = ({
-  value = 'https://according-pads-dude-journalist.trycloudflare.com/?view=passport&id=SP001',
+  value = 'https://tankham.com/?view=passport&id=SP001',
   size = 200,
   className = '',
-  color = '#17382D',
+  color = '#101813',
   bgColor = '#FFFFFF',
   showLogo = true,
   errorCorrectionLevel = 'H' // High (30% recovery) allows center logo without loss of scannability
@@ -26,10 +26,10 @@ export const QRCodeGenerator = ({
 
     QRCode.toDataURL(value, {
       width: Math.max(size * 2, 400), // Retina sharp resolution
-      margin: 2,
+      margin: 3, // Generous quiet zone for fast camera recognition
       errorCorrectionLevel: errorCorrectionLevel,
       color: {
-        dark: color || '#17382D',
+        dark: color || '#101813',
         light: bgColor || '#FFFFFF'
       }
     })
@@ -65,13 +65,13 @@ export const QRCodeGenerator = ({
             className="w-full h-full object-contain rounded-lg"
           />
 
-          {/* Optional Center Lotus Emblem Badge (sized ~18% so scannability remains 100%) */}
+          {/* Center Lotus Emblem Badge: sized cleanly at ~16% to keep >97% of QR matrix 100% visible */}
           {showLogo && (
             <div 
               className="absolute inset-0 m-auto flex items-center justify-center pointer-events-none"
-              style={{ width: size * 0.22, height: size * 0.22 }}
+              style={{ width: size * 0.16, height: size * 0.16 }}
             >
-              <div className="w-full h-full rounded-full bg-[#FFFDF7] p-1 border-2 border-[#D3B392] shadow-md flex items-center justify-center">
+              <div className="w-full h-full rounded-full bg-white p-1 border border-[#D3B392] shadow-sm flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="w-full h-full text-[#17382D]" fill="currentColor">
                   <path d="M12 2C11 6 7 9 7 13C7 16 9.5 18 12 18C14.5 18 17 16 17 13C17 9 13 2 12 2Z" />
                   <path d="M12 6C8 9 3 12 4 16C5 18 8 18 10 18C11 17 12 15 12 14" fill="#D3B392" opacity="0.9" />

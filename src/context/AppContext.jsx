@@ -1,14 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PRODUCTS, WORKSHOPS } from '../data/heritageData';
 
-// Official Cloudflare Tunnel (Enterprise speed, HTTPS, accessible by all mobile devices worldwide)
-export const PUBLIC_HTTPS_TUNNEL = 'https://according-pads-dude-journalist.trycloudflare.com';
+// Official Production Domain of Tan Kham (Permanent HTTPS, globally accessible on all 4G/5G/Wi-Fi devices)
+export const PRODUCTION_DOMAIN = 'https://tankham.com';
+
+// Fallback compatibility alias
+export const PUBLIC_HTTPS_TUNNEL = PRODUCTION_DOMAIN;
 
 // Local LAN IP of host machine for physical mobile devices scanning over Wi-Fi
-export const LOCAL_LAN_IP = '192.168.1.5:8080';
+export const LOCAL_LAN_IP = '192.168.1.5:5173';
 
 /**
  * Returns reachable URL for scanning with physical phone or browser
+ * Automatically detects whether we are on tankham.com or localhost!
  * @param {string|object} productOrCode 
  * @param {'public'|'wifi'|'local'|'domain'} mode 
  */
@@ -16,18 +20,24 @@ export const getPassportScanUrl = (productOrCode, mode = 'public') => {
   const code = typeof productOrCode === 'object' 
     ? (productOrCode.id === 'CNH-001' ? 'SP001' : productOrCode.id)
     : (productOrCode === 'CNH-001' ? 'SP001' : (productOrCode || 'SP001'));
+
+  const isBrowser = typeof window !== 'undefined';
+  const currentOrigin = isBrowser ? window.location.origin : PRODUCTION_DOMAIN;
+  const isLocalhost = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  // When browsing on tankham.com (or any live domain), use current origin directly
+  const defaultPublicBase = (!isLocalhost && isBrowser) ? currentOrigin : PRODUCTION_DOMAIN;
   
   if (mode === 'public') {
-    return `${PUBLIC_HTTPS_TUNNEL}/?view=passport&id=${code}`;
+    return `${defaultPublicBase}/?view=passport&id=${code}`;
   }
   if (mode === 'wifi') {
     return `http://${LOCAL_LAN_IP}/?view=passport&id=${code}`;
   }
   if (mode === 'local') {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-    return `${origin}/?view=passport&id=${code}`;
+    return `${currentOrigin}/?view=passport&id=${code}`;
   }
-  return `https://chuonngo-heritage.vn/qr/${code}`;
+  return `${defaultPublicBase}/?view=passport&id=${code}`;
 };
 
 // Helper to map passport code (SP001..SP005) to product ID (CNH-001..CNH-005)

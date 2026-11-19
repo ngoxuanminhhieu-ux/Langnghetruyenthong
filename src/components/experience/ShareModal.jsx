@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useApp, PUBLIC_HTTPS_TUNNEL, LOCAL_LAN_IP } from '../../context/AppContext';
+import { useApp, PRODUCTION_DOMAIN, PUBLIC_HTTPS_TUNNEL, LOCAL_LAN_IP } from '../../context/AppContext';
 import { QRCodeGenerator } from '../common/QRCodeGenerator';
 import { 
   X, 
@@ -42,14 +42,18 @@ export const ShareModal = ({
   // Construct target AR viewing URL
   const queryParams = `?view=experience&mode=crafting&motif=${encodeURIComponent(displayMotif)}&color=${encodeURIComponent(displayColor)}&size=${encodeURIComponent(displaySize)}`;
 
+  const isBrowser = typeof window !== 'undefined';
+  const currentOrigin = isBrowser ? window.location.origin : PRODUCTION_DOMAIN;
+  const isLocalhost = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const defaultLiveHost = (!isLocalhost && isBrowser) ? currentOrigin : PRODUCTION_DOMAIN;
+
   let shareUrl = '';
   if (scanMode === 'public') {
-    shareUrl = `${PUBLIC_HTTPS_TUNNEL}/${queryParams}`;
+    shareUrl = `${defaultLiveHost}/${queryParams}`;
   } else if (scanMode === 'wifi') {
     shareUrl = `http://${LOCAL_LAN_IP}/${queryParams}`;
   } else {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-    shareUrl = `${origin}/${queryParams}`;
+    shareUrl = `${currentOrigin}/${queryParams}`;
   }
 
   const handleCopy = () => {
