@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Custom iridescent mother-of-pearl shimmer */
+.iridescent-shimmer {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 240, 245, 0.45) 25%,
+    rgba(224, 242, 254, 0.5) 50%,
+    rgba(254, 243, 199, 0.45) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Mother-of-pearl text highlight */
+.text-pearl {
+  background: linear-gradient(135deg, #FFFDF7 0%, #F5F0E5 40%, #E8D3B2 70%, #FFFDF7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #DFCA9E 0%, #B69A68 50%, #957A49 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F0E5;
+}
+::-webkit-scrollbar-thumb {
+  background: #B69A68;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #17382D;
+}
